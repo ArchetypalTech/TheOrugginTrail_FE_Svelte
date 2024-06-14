@@ -58,10 +58,11 @@ export async function authenticateUser() {
 	const account = await client.getAccount(session);
 
 	await client.rpc(session, "nakama/claim-persona", { personaTag: account.user?.username });
-	await socket.rpc(
+	const response = await socket.rpc(
 		"tx/game/create-player",
 		JSON.stringify({ PlayerName: account.user?.username, RoomID: "0" })
 	);
+	return response.payload;
 }
 
 export async function processCommand(command: string) {
