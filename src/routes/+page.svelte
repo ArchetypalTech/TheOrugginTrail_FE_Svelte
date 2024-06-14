@@ -3,7 +3,10 @@
 	import Terminal from "../components/Terminal.svelte";
 	import { setupThree } from "../three";
 	import Wallet from "../components/Wallet.svelte";
+	import { authenticateUser } from "../nakama";
+
 	onMount(setupThree);
+	authenticateUser();
 </script>
 
 <div class="w-screen h-screen relative bg-black">
