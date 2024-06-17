@@ -5,8 +5,10 @@
 	import Wallet from "../components/Wallet.svelte";
 	import { authenticateUser } from "../nakama";
 
-	onMount(setupThree);
-	authenticateUser();
+	onMount(() => {
+		setupThree();
+		authenticateUser();
+	});
 </script>
 
 <div class="w-screen h-screen relative bg-black">
