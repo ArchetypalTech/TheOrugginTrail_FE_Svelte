@@ -11,6 +11,7 @@ const client = new Client(serverkey, ip, port, undefined, 10000);
 
 const socket = client.createSocket();
 let session: Session | null = null;
+let account: any | null = null;
 
 export async function authenticateUser() {
 	let deviceId: string | null = null;
@@ -55,20 +56,37 @@ export async function authenticateUser() {
 		}
 	});
 
-	const account = await client.getAccount(session);
+	account = await client.getAccount(session);
 
-	await client.rpc(session, "nakama/claim-persona", { personaTag: account.user?.username });
-	const response = await socket.rpc(
-		"tx/game/create-player",
-		JSON.stringify({ PlayerName: account.user?.username, RoomID: "0" })
-	);
-	return response.payload;
+	await client
+		.rpc(session, "nakama/claim-persona", { personaTag: account.user?.username })
+		.catch((error) => {
+			console.error("claim persona error: ", error);
+		})
+		.then((response) => {
+			console.log("claim persona response: ", response);
+			socket
+				.rpc(
+					"tx/game/create-player",
+					JSON.stringify({ PlayerName: account.user?.username, RoomID: 0 })
+				)
+				.catch((error) => {
+					console.error("create player error: ", error);
+				})
+				.then((response) => {
+					console.log("create persona response: ", response);
+				});
+		});
+
+	// return response.payload;
 }
 
 export async function processCommand(command: string) {
+	const data = { PlayerName: account.user?.username, Tokens: command.split(" ") };
+	console.log("data: ", data);
 	const responseSocket = await socket.rpc(
-		"tx/game/process-command",
-		JSON.stringify({ Command: command })
+		"tx/game/process-commands",
+		JSON.stringify(data) // ["move", "forward"]
 	);
 	return responseSocket.payload;
 }
