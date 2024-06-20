@@ -1,5 +1,6 @@
 import { Client, Session } from "@heroiclabs/nakama-js";
 import { generateUUID } from "three/src/math/MathUtils.js";
+import { updateScene } from "./three";
 
 const serverkey = "defaultkey";
 const username = "mycustomusername";
@@ -81,12 +82,26 @@ export async function authenticateUser() {
 	// return response.payload;
 }
 
-export async function processCommand(command: string) {
+let commandProcessResolves: Record<string, (value: string | PromiseLike<string>) => void> = {};
+
+export async function processCommand(
+	command: string,
+	resolve: (value: string | PromiseLike<string>) => void
+) {
 	const data = { PlayerName: account.user?.username, Tokens: command.split(" ") };
-	console.log("data: ", data);
-	const responseSocket = await socket.rpc(
-		"tx/game/process-commands",
-		JSON.stringify(data) // ["move", "forward"]
-	);
-	return responseSocket.payload;
+	const responseSocket = await socket.rpc("tx/game/process-commands", JSON.stringify(data));
+	// map the hash to the resolve of the promise, so it can be called in socket.onnotification
+	commandProcessResolves[JSON.parse(responseSocket.payload as any).TxHash] = resolve;
 }
+
+socket.onnotification = (matchData) => {
+	// grab the hash and check if a resolve exists for it
+	const hash = (matchData.content as any).txHash;
+	// add further if statements to check for other transactions in the future
+	if (commandProcessResolves[hash]) {
+		const response = (matchData.content as any).result.Result;
+		updateScene(response);
+		commandProcessResolves[hash](response);
+		delete commandProcessResolves[hash];
+	}
+};
