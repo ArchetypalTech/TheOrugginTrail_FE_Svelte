@@ -3,7 +3,6 @@ import { generateUUID } from "three/src/math/MathUtils.js";
 import { updateScene } from "./three";
 
 const serverkey = "defaultkey";
-const username = "mycustomusername";
 const ip = "127.0.0.1";
 const port = "7350";
 const key = "@MyApp:deviceKey";
@@ -14,7 +13,7 @@ const socket = client.createSocket();
 let session: Session | null = null;
 let account: any | null = null;
 
-export async function authenticateUser() {
+export async function authenticateUser(username: string, roomNumber: number) {
 	let deviceId: string | null = null;
 	// If the user's device ID is already stored, grab that - alternatively get the System's unique device identifier.
 	const value = localStorage.getItem(key);
@@ -59,27 +58,31 @@ export async function authenticateUser() {
 
 	account = await client.getAccount(session);
 
-	await client
+	const response = await client
 		.rpc(session, "nakama/claim-persona", { personaTag: account.user?.username })
 		.catch((error) => {
 			console.error("claim persona error: ", error);
+		});
+	console.log("claim persona response: ", response);
+	await socket
+		.rpc("tx/game/create-player", JSON.stringify({ PlayerName: account.user?.username, RoomID: 0 }))
+		.catch((error) => {
+			console.error("create player error: ", error);
 		})
 		.then((response) => {
-			console.log("claim persona response: ", response);
-			socket
-				.rpc(
-					"tx/game/create-player",
-					JSON.stringify({ PlayerName: account.user?.username, RoomID: 0 })
-				)
-				.catch((error) => {
-					console.error("create player error: ", error);
-				})
-				.then((response) => {
-					console.log("create persona response: ", response);
-				});
+			console.log("create persona response: ", response);
 		});
 
 	// return response.payload;
+}
+
+export async function logout() {
+	await socket.disconnect(true);
+	if (session) {
+		await client.sessionLogout(session, session.token, session.refresh_token);
+	}
+	localStorage.removeItem("@MyApp:deviceKey");
+	localStorage.removeItem("username");
 }
 
 let commandProcessResolves: Record<string, (value: string | PromiseLike<string>) => void> = {};

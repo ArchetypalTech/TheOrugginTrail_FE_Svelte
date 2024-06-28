@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { tick } from "svelte";
+	import { onMount, tick } from "svelte";
 	import { sendCommand } from "../api/terminal";
+	import { authenticateUser, logout } from "../nakama";
 
 	let headerText = [
 		"Archetypal Tech welcomes you to DEATH",
@@ -16,6 +17,23 @@
 	let inputHistoryIndex = 0;
 	let terminalForm: HTMLFormElement;
 	let terminalInput: HTMLInputElement;
+
+	// let isLoggedIn = false;
+
+	// onMount(async () => {
+	// 	if (!isLoggedIn) {
+	// 		if (localStorage.getItem("@MyApp:deviceKey") != null) {
+	// 			await authenticateUser(localStorage.getItem("@MyApp:deviceKey")!, 0); // room number does not matter on login, only on creation.
+	// 			isLoggedIn = true;
+	// 			terminalContent = [
+	// 				...terminalContent,
+	// 				"You have been logged in as " + localStorage.getItem("username") + "!",
+	// 			];
+	// 			return;
+	// 		}
+	// 	}
+	// 	terminalContent = [...terminalContent, "Please enter your username to login."];
+	// });
 
 	function handleKeyDown(e: KeyboardEvent) {
 		// up down cycle through prevInputs or back to originalInputValue
@@ -46,6 +64,28 @@
 		const command = inputValue;
 		inputHistoryIndex = 0;
 		if (command === "") return;
+		// if (!isLoggedIn) {
+		// 	inputValue = "";
+		// 	let username = command.split(" ")[0];
+		// 	let number = 0;
+		// 	try {
+		// 		number = parseInt(command.split(" ")[1]);
+		// 	} catch (e) {}
+		// 	await authenticateUser(username, number);
+		// 	localStorage.setItem("username", username);
+		// 	isLoggedIn = true;
+		// 	terminalContent = [...terminalContent, "You are now logged in as " + username + "!"];
+		// 	return;
+		// }
+		// if (isLoggedIn) {
+		// 	if (command === "logout") {
+		// 		await logout();
+		// 		isLoggedIn = false;
+		// 		terminalContent = [...terminalContent, "You have been logged out."];
+		// 		inputValue = "";
+		// 		return;
+		// 	}
+		// }
 		if (command === "clear") {
 			terminalContent = [];
 			inputValue = "";
