@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { onMount, tick } from "svelte";
 	import { sendCommand } from "../api/terminal";
+	import { sendCreatePlayer } from "../api/terminal";
 	import { authenticateUser, logout } from "../nakama";
+	import { int, string } from "three/examples/jsm/nodes/Nodes.js";
 
 	let headerText = [
 		"Archetypal Tech welcomes you to DEATH",
@@ -17,6 +19,11 @@
 	let inputHistoryIndex = 0;
 	let terminalForm: HTMLFormElement;
 	let terminalInput: HTMLInputElement;
+
+
+	let step = 0;
+  	let username = "";
+  	let roomID = 0;
 
 	// let isLoggedIn = false;
 
@@ -64,45 +71,64 @@
 		const command = inputValue;
 		inputHistoryIndex = 0;
 		if (command === "") return;
-		// if (!isLoggedIn) {
-		// 	inputValue = "";
-		// 	let username = command.split(" ")[0];
-		// 	let number = 0;
-		// 	try {
-		// 		number = parseInt(command.split(" ")[1]);
-		// 	} catch (e) {}
-		// 	await authenticateUser(username, number);
-		// 	localStorage.setItem("username", username);
-		// 	isLoggedIn = true;
-		// 	terminalContent = [...terminalContent, "You are now logged in as " + username + "!"];
-		// 	return;
-		// }
-		// if (isLoggedIn) {
-		// 	if (command === "logout") {
-		// 		await logout();
-		// 		isLoggedIn = false;
-		// 		terminalContent = [...terminalContent, "You have been logged out."];
-		// 		inputValue = "";
-		// 		return;
-		// 	}
-		// }
+		
+		// Handle Create Player sequence
+		if (command === "Create Player") {
+			terminalContent = [...terminalContent, "How will you be known as MORTAL?"];
+			step = 1;
+		} else if (step === 1) {
+			username = command;
+			terminalContent = [...terminalContent, `You are now ${username}`];
+			terminalContent = [...terminalContent, "Where will you be summoned? 1, 2, or 3?"];
+			step = 2;
+		} else if (step === 2) {
+			roomID = Number(command);
+			if ([0, 1, 2].includes(roomID)) {
+				terminalContent = [...terminalContent, `You are entering room ${roomID}. I hope that you don't die soon MORTAL!`];
+				step = 3;
+				try {
+					const response = await sendCreatePlayer(username, roomID);
+					terminalContent = [...terminalContent, response];
+				} catch (e) {
+					console.error(e);
+				}
+				inputValue = "";
+				await tick();
+				terminalForm.scrollTo({ left: 0, top: terminalForm.scrollHeight, behavior: "smooth" });
+				return; // Exit early to prevent further command processing
+			} else {
+				terminalContent = [...terminalContent, "Invalid room ID. Please enter 1, 2, or 3."];
+			}
+			
+		}
+
+		inputValue = "";
+		await tick();
+
+		// Handle clear command
 		if (command === "clear") {
 			terminalContent = [];
 			inputValue = "";
 			return;
 		}
+		
+		// Regular command execution
+		if (step === 3) {
+			inputHistory = [...inputHistory, command];
+			terminalContent = [...terminalContent, command];
+			try {
+				const response = await sendCommand(command);
+				terminalContent = [...terminalContent, response];
+			} catch (e) {
+				console.error(e);
+			}
+		} 
+
 		inputValue = "";
-		terminalContent = [...terminalContent, command];
-		inputHistory = [...inputHistory, command];
 		await tick();
 		terminalForm.scrollTo({ left: 0, top: terminalForm.scrollHeight, behavior: "smooth" });
-		try {
-			const response = await sendCommand(command);
-			terminalContent = [...terminalContent, response];
-		} catch (e) {
-			console.error(e);
-		}
 	}
+
 </script>
 
 <form
