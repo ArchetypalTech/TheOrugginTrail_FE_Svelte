@@ -3,7 +3,8 @@ import { generateUUID } from "three/src/math/MathUtils.js";
 import { updateScene } from "./three";
 
 const serverkey = "defaultkey";
-const ip = "127.0.0.1";
+const ipLocal = "127.0.0.1";
+const ip = "16.16.240.57";
 const port = "7350";
 const key = "@MyApp:deviceKey";
 
