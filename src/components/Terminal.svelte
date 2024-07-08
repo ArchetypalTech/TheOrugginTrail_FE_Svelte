@@ -3,14 +3,14 @@
 	import { sendCommand } from "../api/terminal";
 	import { sendCreatePlayer } from "../api/terminal";
 	import { authenticateUser, logout } from "../nakama";
-	import { int, string } from "three/examples/jsm/nodes/Nodes.js";
+	import { If, int, string } from "three/examples/jsm/nodes/Nodes.js";
 
 	let headerText = [
 		"Archetypal Tech welcomes you to DEATH",
 		"well possibly...",
 		"\n",
 		"The O'Ruggin Trail, no:23",
-		"from the good folk at",
+		"from the good folk at",		
 	];
 	let inputValue = "";
 	let originalInputValue = "";
@@ -66,6 +66,10 @@
 		}
 	}
 
+	onMount(async () => {
+		terminalContent = [...terminalContent, "How will you be known as, MORTAL?"];
+	});
+
 	async function submitForm(e: SubmitEvent) {
 		e.preventDefault();
 		const command = inputValue;
@@ -73,32 +77,31 @@
 		if (command === "") return;
 		
 		// Handle Create Player sequence
-		if (command === "Create Player") {
-			terminalContent = [...terminalContent, "How will you be known as MORTAL?"];
-			step = 1;
-		} else if (step === 1) {
+		if (step === 0) {			
 			username = command;
+			// Return the player's name
 			terminalContent = [...terminalContent, `You are now ${username}`];
-			terminalContent = [...terminalContent, "Where will you be summoned? 1, 2, or 3?"];
-			step = 2;
-		} else if (step === 2) {
-			roomID = Number(command);
-			if ([0, 1, 2].includes(roomID)) {
-				terminalContent = [...terminalContent, `You are entering room ${roomID}. I hope that you don't die soon MORTAL!`];
-				step = 3;
-				try {
+			
+	
+			// Create the player, the roomID will alwayas be 1 if needed.
+			roomID = Number(1);	
+			try {
 					const response = await sendCreatePlayer(username, roomID);
+					// Display the room description
 					terminalContent = [...terminalContent, response];
 				} catch (e) {
-					console.error(e);
-				}
-				inputValue = "";
-				await tick();
-				terminalForm.scrollTo({ left: 0, top: terminalForm.scrollHeight, behavior: "smooth" });
-				return; // Exit early to prevent further command processing
-			} else {
-				terminalContent = [...terminalContent, "Invalid room ID. Please enter 1, 2, or 3."];
+				console.error(e);
 			}
+
+			await tick();
+			// Last message from us	
+			terminalContent = [...terminalContent, `You have been summoned now ${username}. What will you do now? I hope you don't die soon. Farewell`];
+			step = 1;
+				
+			inputValue = "";
+			await tick();
+			terminalForm.scrollTo({ left: 0, top: terminalForm.scrollHeight, behavior: "smooth" });
+			return; // Exit early to prevent further command processing		
 			
 		}
 
@@ -113,7 +116,7 @@
 		}
 		
 		// Regular command execution
-		if (step === 3) {
+		if (step === 1) {
 			inputHistory = [...inputHistory, command];
 			terminalContent = [...terminalContent, command];
 			try {

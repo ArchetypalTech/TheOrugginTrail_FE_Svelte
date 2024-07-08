@@ -13,7 +13,7 @@ const socket = client.createSocket();
 let session: Session | null = null;
 let account: any | null = null;
 
-/* NO LONGER IN USE AS THIS WAS CALLED ON MOUNT
+// NO LONGER IN USE AS THIS WAS CALLED ON MOUNT
 export async function authenticateUser(username: string, roomNumber: number) {
 	let deviceId: string | null = null;
 	// If the user's device ID is already stored, grab that - alternatively get the System's unique device identifier.
@@ -78,7 +78,7 @@ export async function authenticateUser(username: string, roomNumber: number) {
 	
 	// return response.payload;
 }
-*/
+
 
 let createPlayersResolves: Record<string, (value: string | PromiseLike<string>) => void> = {};
 let playerNameL: string;
@@ -89,7 +89,8 @@ export async function createPlayer(
 	resolve: (value: string | PromiseLike<string>) => void) 
 	{
 		playerNameL = playerName
-		let deviceId: string | null = null;
+		
+	let deviceId: string | null = null;
 	// If the user's device ID is already stored, grab that - alternatively get the System's unique device identifier.
 	const value = localStorage.getItem(key);
 	if (value !== null) {
@@ -133,13 +134,16 @@ export async function createPlayer(
 
 	account = await client.getAccount(session);
 
+	
 	const response = await client
 		.rpc(session, "nakama/claim-persona", { personaTag: playerNameL })
 		.catch((error) => {
 			console.error("claim persona error: ", error);
 		});
 	console.log("claim persona response: ", response);
-		const responseSocket = await socket
+	
+
+	const responseSocket = await socket
 		.rpc("tx/game/create-player", JSON.stringify({ PlayerName: playerNameL, RoomID: room }))
 		createPlayersResolves[JSON.parse(responseSocket.payload as any).TxHash] = resolve;
 }
