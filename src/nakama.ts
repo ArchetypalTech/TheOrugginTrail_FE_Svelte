@@ -8,9 +8,10 @@ const ip = "16.16.240.57";
 const port = "7350";
 const key = "@MyApp:deviceKey";
 
-const client = new Client(serverkey, ip, port, false, 10000);
+var useSSL = false; // Enable if server is run with an SSL certificate.
+const client = new Client(serverkey, ip, port, useSSL, 10000);
 
-const socket = client.createSocket();
+const socket = client.createSocket(useSSL);
 let session: Session | null = null;
 let account: any | null = null;
 
@@ -90,6 +91,9 @@ export async function createPlayer(
 	resolve: (value: string | PromiseLike<string>) => void) 
 	{
 		playerNameL = playerName
+
+		var useSSL = false; // Enable if server is run with an SSL certificate.
+		var client = new Client(serverkey, ip, port, useSSL, 10000);
 		
 	let deviceId: string | null = null;
 	// If the user's device ID is already stored, grab that - alternatively get the System's unique device identifier.
