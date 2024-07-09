@@ -8,7 +8,7 @@ const ip = "16.16.240.57";
 const port = "7350";
 const key = "@MyApp:deviceKey";
 
-const client = new Client(serverkey, ip, port, undefined, 10000);
+const client = new Client(serverkey, ip, port, false, 10000);
 
 const socket = client.createSocket();
 let session: Session | null = null;
