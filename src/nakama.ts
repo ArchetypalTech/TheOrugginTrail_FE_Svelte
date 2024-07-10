@@ -17,7 +17,7 @@ let session: Session | null = null;
 let account: any | null = null;
 
 // NO LONGER IN USE AS THIS WAS CALLED ON MOUNT
-export async function authenticateUser(username: string, roomNumber: number) {
+export async function authenticateUser(/*username: string, roomNumber: number*/) {
 	let deviceId: string | null = null;
 	// If the user's device ID is already stored, grab that - alternatively get the System's unique device identifier.
 	const value = localStorage.getItem(key);
@@ -31,7 +31,7 @@ export async function authenticateUser(username: string, roomNumber: number) {
 
 	// Authenticate with the Nakama server using Device Authentication.
 	const create = true;
-	session = await client.authenticateDevice(deviceId, create, username);
+	session = await client.authenticateDevice(deviceId, create, deviceId);
 	
 	let appearOnline = true;
 	await socket.connect(session, appearOnline);
@@ -39,20 +39,24 @@ export async function authenticateUser(username: string, roomNumber: number) {
 	setInterval(async () => {
 		if (session?.isexpired(Date.now()) || session?.isexpired(Date.now() + 1)) {
 			try {
+				console.log('Session is expired or about to expire. Attempting to refresh...');
 				// Attempt to refresh the existing session.
 				session = await client.sessionRefresh(session);
+				console.log('Session refreshed successfully');
 			} catch (error) {
+				console.error('Failed to refresh session:', error);
 				if (deviceId === null) {
+					console.error('Device ID is null. Cannot reauthenticate.');
 					return;
 				}
 				// Couldn't refresh the session so reauthenticate.
+				console.log('Attempting to reauthenticate the device...');
 				session = await client.authenticateDevice(deviceId);
-				const refreshToken = session.refresh_token;
+				console.log('Device reauthenticated successfully');
 			}
 			const authToken = session.token;
 		}
-	}, 1);
-
+	}, 10000); // Check every 10 sec
 	window.addEventListener("beforeunload", async () => {
 		await socket.disconnect(true);
 		if (session) {
@@ -69,16 +73,6 @@ export async function authenticateUser(username: string, roomNumber: number) {
 		});
 	console.log("claim persona response: ", response);
 	
-	
-	await socket
-		.rpc("tx/game/create-player", JSON.stringify({ PlayerName: account.user?.username, RoomID: 0 }))
-		.catch((error) => {
-			console.error("create player error: ", error);
-		})
-		.then((response) => {
-			console.log("create persona response: ", response);
-		});
-	
 	// return response.payload;
 }
 
@@ -93,7 +87,7 @@ export async function createPlayer(
     resolve: (value: string | PromiseLike<string>) => void
 ) {
     playerNameL = playerName;
-
+	/*
     let deviceId: string | null = null;
     // If the user's device ID is already stored, grab that - alternatively get the System's unique device identifier.
     const value = localStorage.getItem(key);
@@ -156,7 +150,10 @@ export async function createPlayer(
 
     } catch (error) {
         console.error('Error in createPlayer:', error);
-    }
+    }*/
+
+	const responseSocket = await socket.rpc("tx/game/create-player", JSON.stringify({ PlayerName: playerNameL, RoomID: room }));
+	createPlayersResolves[JSON.parse(responseSocket.payload as any).TxHash] = resolve;
 }
 
 export async function logout() {

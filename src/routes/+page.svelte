@@ -7,7 +7,7 @@
 
 	onMount(() => {
 		setupThree();
-		//authenticateUser("mycustomusername", 0);
+		authenticateUser();
 	});
 </script>
 
