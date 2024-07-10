@@ -126,7 +126,7 @@ export async function createPlayer(
 			}
 			const authToken = session.token;
 		}
-	}, 1);
+	}, 5*60*1000); // Check every 5 min
 
 	window.addEventListener("beforeunload", async () => {
 		await socket.disconnect(true);
