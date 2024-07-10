@@ -6,10 +6,11 @@ const serverkey = "defaultkey";
 const ipLocal = "127.0.0.1";
 const ip = "16.16.204.57";
 const port = "7350";
+const port2 = "7348";
 const key = "@MyApp:deviceKey";
 
 const useSSL = true; // Enable if server is run with an SSL certificate.
-const client = new Client(serverkey, ip, port, useSSL, 100000, true);
+const client = new Client(serverkey, ip, port2, useSSL, 100000, true);
 
 const socket = client.createSocket(useSSL);
 let session: Session | null = null;
