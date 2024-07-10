@@ -4,7 +4,7 @@ import { updateScene } from "./three";
 
 const serverkey = "defaultkey";
 const ipLocal = "127.0.0.1";
-const ip = "16.16.204.57";
+const ip = "meatpuppet.itrainspiders.co.uk";
 const port = "7350";
 const port2 = "7348";
 const key = "@MyApp:deviceKey";
