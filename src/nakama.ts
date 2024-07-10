@@ -67,9 +67,11 @@ export async function authenticateUser(/*username: string, roomNumber: number*/)
 	});
 
 	account = await client.getAccount(session);
+	
+	const resultDeviceID = deviceId.replace(/-/g, '_').slice(0, 10);
 
 	const response = await client
-		.rpc(session, "nakama/claim-persona", { personaTag: deviceId })
+		.rpc(session, "nakama/claim-persona", { personaTag: resultDeviceID })
 		.catch((error) => {
 			console.error("claim persona error: ", error);
 		});
