@@ -31,7 +31,7 @@ export async function authenticateUser(/*username: string, roomNumber: number*/)
 
 	// Authenticate with the Nakama server using Device Authentication.
 	const create = true;
-	session = await client.authenticateDevice(deviceId, create);
+	session = await client.authenticateDevice(deviceId, create, deviceId);
 	console.log('DEVICEID is', deviceId);
 	
 	
@@ -69,7 +69,7 @@ export async function authenticateUser(/*username: string, roomNumber: number*/)
 	account = await client.getAccount(session);
 
 	const response = await client
-		.rpc(session, "nakama/claim-persona", { personaTag: account.user?.username })
+		.rpc(session, "nakama/claim-persona", { personaTag: deviceId })
 		.catch((error) => {
 			console.error("claim persona error: ", error);
 		});
