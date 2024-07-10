@@ -31,7 +31,7 @@ export async function authenticateUser(/*username: string, roomNumber: number*/)
 
 	// Authenticate with the Nakama server using Device Authentication.
 	const create = true;
-	session = await client.authenticateDevice(deviceId, create, deviceId);
+	session = await client.authenticateDevice(deviceId, create);
 	console.log('DEVICEID is', deviceId);
 	
 	
