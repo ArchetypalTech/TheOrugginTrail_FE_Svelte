@@ -8,7 +8,7 @@ const ip = "16.16.204.57";
 const port = "7350";
 const key = "@MyApp:deviceKey";
 
-const useSSL = false; // Enable if server is run with an SSL certificate.
+const useSSL = true; // Enable if server is run with an SSL certificate.
 const client = new Client(serverkey, ip, port, useSSL, 100000, true);
 
 const socket = client.createSocket(useSSL);
